@@ -10,7 +10,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 app.UseCors("liberar");
 
-string connectionString = "Server=localhost;Database=barbearia_da_05;User=root;Password=;";
+string connectionString = "Server=sakura.proxy.rlwy.net;Port=44682;Database=railway;User=root;Password=pICrJesDiaasNMiKdKosRErIVMfDaVIq;";
 
 // ---------------- CLIENTES ----------------
 
