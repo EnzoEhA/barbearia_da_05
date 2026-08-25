@@ -222,3 +222,4 @@ app.Run();
 
 record ClienteInput(string Nome, string Telefone, string Email);
 record AgendamentoInput(string Nome, string Telefone, string Email, int IdBarbeiro, int IdServico, string Data, string Horario);
+record StatusInput(string Status);
