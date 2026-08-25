@@ -175,6 +175,48 @@ cmd.Parameters.AddWithValue("@idBarbeiro", a.IdBarbeiro);
 
     return Results.Ok("Agendado!");
 });
+// Lista todos os agendamentos com os nomes já resolvidos (cliente, barbeiro, serviço)
+app.MapGet("/agendamentos/lista", async () =>
+{
+    var lista = new List<object>();
+    using var conn = new MySqlConnection(connectionString);
+    await conn.OpenAsync();
+    using var cmd = new MySqlCommand(@"
+        SELECT a.id_agendamento, c.nome AS cliente, b.nome AS barbeiro, s.nome AS servico,
+               a.data_agendamento, a.horario, a.status
+        FROM agendamentos a
+        JOIN clientes c ON c.id = a.id_cliente
+        JOIN barbeiros b ON b.id_barbeiro = a.id_barbeiro
+        JOIN servicos s ON s.id_servico = a.id_servico
+        ORDER BY a.data_agendamento DESC, a.horario DESC", conn);
+    using var reader = await cmd.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        lista.Add(new
+        {
+            Id = reader.GetInt32("id_agendamento"),
+            Cliente = reader.GetString("cliente"),
+            Barbeiro = reader.GetString("barbeiro"),
+            Servico = reader.GetString("servico"),
+            Data = reader.GetDateTime("data_agendamento").ToString("yyyy-MM-dd"),
+            Horario = reader.GetTimeSpan("horario").ToString(@"hh\:mm"),
+            Status = reader.GetString("status")
+        });
+    }
+    return Results.Ok(lista);
+});
+
+// Atualiza só o status de um agendamento (ex: cancelar, confirmar, concluir)
+app.MapPut("/agendamentos/{id}/status", async (int id, StatusInput s) =>
+{
+    using var conn = new MySqlConnection(connectionString);
+    await conn.OpenAsync();
+    using var cmd = new MySqlCommand("UPDATE agendamentos SET status=@status WHERE id_agendamento=@id", conn);
+    cmd.Parameters.AddWithValue("@status", s.Status);
+    cmd.Parameters.AddWithValue("@id", id);
+    await cmd.ExecuteNonQueryAsync();
+    return Results.Ok("Atualizado!");
+});
 
 app.Run();
 
